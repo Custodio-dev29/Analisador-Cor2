@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico — Analisador de Cores</title>
+  <meta name="description" content="Análises de cor salvas, com exportação para CSV e Excel.">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon-192x192.png" type="image/png">
+  <link rel="stylesheet" href="./styles.css">
+  <noscript>
+    <p class="noscript-warning">Este analisador precisa de JavaScript habilitado para funcionar.</p>
+  </noscript>
+</head>
+<body>
+  <main class="main-container">
+    <div class="page-heading">
+      <h1>Histórico de Análises</h1>
+      <p id="history-count" class="page-heading__meta"></p>
+    </div>
+
+    <section class="controls" aria-label="Ações do histórico">
+      <a href="./index.html" class="control-btn">Voltar ao Analisador</a>
+      <button type="button" id="export-csv-btn" class="control-btn">Exportar CSV</button>
+      <button type="button" id="export-xlsx-btn" class="control-btn">Exportar Excel</button>
+      <button type="button" id="clear-history-btn" class="control-btn danger-btn" hidden>Limpar histórico</button>
+      <button type="button" id="logout-btn" class="control-btn danger-btn">Sair</button>
+    </section>
+
+    <section class="analysis-history-container">
+      <table class="analysis-history-table">
+        <caption>Análises salvas. Diferença medida com CIEDE2000.</caption>
+        <thead>
+          <tr>
+            <th scope="col">ID / Nome da Amostra</th>
+            <th scope="col">Cor de Referência</th>
+            <th scope="col">Cor Analisada</th>
+            <th scope="col">Dif. (ΔE)</th>
+            <th scope="col">Interpretação</th>
+            <th scope="col">Ação</th>
+          </tr>
+        </thead>
+        <tbody id="analysis-history-body"></tbody>
+      </table>
+
+      <div class="history-footer">
+        <button type="button" id="load-more-btn" class="control-btn" hidden>Carregar mais</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/history.js"></script>
+</body>
+</html>

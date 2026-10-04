@@ -1,0 +1,7 @@
+node_modules/
+coverage/
+dev-dist/
+dist/
+*.log
+.DS_Store
+Thumbs.db

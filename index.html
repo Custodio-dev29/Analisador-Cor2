@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analisador de Cores</title>
+  <meta name="description" content="Amostragem de cor em resolução real com comparação CIEDE2000 e histórico por usuário.">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon-192x192.png" type="image/png">
+  <link rel="stylesheet" href="./styles.css">
+  <noscript>
+    <p class="noscript-warning">Este analisador precisa de JavaScript habilitado para funcionar.</p>
+  </noscript>
+</head>
+<body>
+  <div id="update-banner" class="update-banner" role="region" aria-label="Atualização disponível" hidden>
+    <p id="update-message">Há uma versão nova disponível.</p>
+    <div class="update-banner__actions">
+      <button type="button" id="update-btn" class="control-btn">Atualizar agora</button>
+      <button type="button" class="control-btn update-dismiss">Agora não</button>
+    </div>
+  </div>
+
+  <main class="main-container">
+    <h1>Analisador de Cores</h1>
+
+    <section class="controls" aria-label="Navegação principal">
+      <button type="button" id="upload-btn" class="control-btn">Carregar Imagem</button>
+      <input type="file" id="image-input" accept="image/*" class="visually-hidden">
+      <a href="./history.html" class="control-btn">Ver Histórico</a>
+      <a href="./profile.html" id="admin-panel-link" class="control-btn" hidden>Painel do Admin</a>
+      <button type="button" id="logout-btn" class="control-btn danger-btn">Sair</button>
+    </section>
+
+    <section class="settings-panel" aria-label="Ajustes de amostragem">
+      <label for="sample-size">
+        Tamanho da Amostra:
+        <input type="range" id="sample-size" min="1" max="15" value="5" step="2">
+        <output id="sample-size-value" for="sample-size">5×5</output>
+      </label>
+      <p id="image-meta" class="image-meta">Nenhuma imagem carregada.</p>
+    </section>
+
+    <p class="sr-only" id="canvas-help">
+      Clique na imagem para medir a cor. Com o canvas em foco, use as setas para
+      mover o cursor (Shift para passos de 10 pixels) e Enter para medir.
+    </p>
+
+    <div class="content-area">
+      <div class="canvas-wrapper">
+        <canvas
+          id="image-canvas"
+          class="image-canvas"
+          width="10"
+          height="10"
+          tabindex="0"
+          role="application"
+          aria-label="Área de amostragem de cor"
+          aria-describedby="canvas-help"
+        ></canvas>
+
+        <div id="image-click-marker" class="click-marker" aria-hidden="true" hidden></div>
+
+        <div class="zoom-preview">
+          <div class="zoom-preview__viewer">
+            <p class="zoom-preview__label">Área ampliada (pixels reais)</p>
+            <canvas id="zoom-canvas" class="zoom-canvas" width="100" height="100" aria-hidden="true"></canvas>
+          </div>
+          <div class="zoom-preview__actions">
+            <button type="button" id="set-as-ref-btn" class="primary-btn">Definir como Referência</button>
+            <button type="button" id="add-to-palette-btn" class="primary-btn">Adicionar à Paleta</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-wrapper">
+        <div class="analysis-name-wrapper">
+          <label for="analysis-name">Nome da Amostra:</label>
+          <input type="text" id="analysis-name" maxlength="120" placeholder="Digite um nome..." autocomplete="off">
+        </div>
+
+        <section class="palette-container" aria-labelledby="palette-title">
+          <h3 id="palette-title">
+            Paleta de Referência
+            <span id="palette-count" class="palette-count">0</span>
+          </h3>
+          <div id="palette-list" class="palette-list"></div>
+        </section>
+
+        <table class="comparison-table">
+          <caption>Tabela comparativa entre a cor de referência e a cor selecionada</caption>
+          <thead>
+            <tr>
+              <th scope="col">Métrica</th>
+              <th scope="col">Cor de Referência</th>
+              <th scope="col">Cor Selecionada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pré-visualização</td>
+              <td data-cell="preview" data-column="ref"><span id="ref-preview" class="table-swatch" role="img" aria-label="Sem cor"></span></td>
+              <td data-cell="preview" data-column="sel"><span id="sel-preview" class="table-swatch" role="img" aria-label="Sem cor"></span></td>
+            </tr>
+            <tr>
+              <td>HEX</td>
+              <td data-cell="hex" data-column="ref">-</td>
+              <td data-cell="hex" data-column="sel">-</td>
+            </tr>
+            <tr>
+              <td>RGB</td>
+              <td data-cell="rgb" data-column="ref">-</td>
+              <td data-cell="rgb" data-column="sel">-</td>
+            </tr>
+            <tr>
+              <td>Lab (D65)</td>
+              <td data-cell="lab" data-column="ref">-</td>
+              <td data-cell="lab" data-column="sel">-</td>
+            </tr>
+            <tr>
+              <td>Luminosidade (L*)</td>
+              <td data-cell="lightness" data-column="ref">-</td>
+              <td data-cell="lightness" data-column="sel">-</td>
+            </tr>
+            <tr>
+              <td>Diferença (ΔE 2000)</td>
+              <td colspan="2" data-cell="delta" data-column="value">-</td>
+            </tr>
+            <tr>
+              <td>Interpretação</td>
+              <td colspan="2" data-cell="interpretation" data-column="value">-</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button type="button" id="save-analysis-btn" class="primary-btn">Salvar Análise</button>
+
+        <p class="sr-only" id="value-announcer" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <section class="color-ruler-container" aria-labelledby="ruler-title">
+      <h2 id="ruler-title" class="ruler-title">Luminosidade da Cor de Referência</h2>
+      <div class="ruler-wrapper">
+        <div id="color-ruler-ref" class="color-ruler"></div>
+        <div id="ref-color-marker" class="ruler-marker ref-marker" aria-hidden="true" hidden></div>
+        <div id="sel-color-marker" class="ruler-marker sel-marker" aria-hidden="true" hidden></div>
+      </div>
+      <div class="ruler-readout">
+        <span id="ref-ruler-label" class="ruler-readout__label">Ref —</span>
+        <span id="sel-ruler-label" class="ruler-readout__label">Sel —</span>
+      </div>
+      <div class="ruler-labels" aria-hidden="true">
+        <span>Escuro (L*=0)</span>
+        <span>Médio (L*=50)</span>
+        <span>Claro (L*=100)</span>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

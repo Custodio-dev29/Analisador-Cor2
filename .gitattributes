@@ -1,0 +1,10 @@
+# Normaliza fim de linha no repositorio: o GitHub Pages serve por HTTP e
+# misturar CRLF com LF cria diffs falsos e soreferencias em HTML/CSS.
+* text=auto eol=lf
+
+# Binarios: nunca devem ser convertidos.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Administrador — Analisador de Cores</title>
+  <meta name="description" content="Gestão de contas do Analisador de Cores.">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon-192x192.png" type="image/png">
+  <link rel="stylesheet" href="./styles.css">
+  <noscript>
+    <p class="noscript-warning">Este analisador precisa de JavaScript habilitado para funcionar.</p>
+  </noscript>
+</head>
+<body>
+  <main class="main-container">
+    <div class="page-heading">
+      <h1>Painel do Administrador</h1>
+      <p class="page-heading__meta">Conectado como <strong id="current-user">—</strong></p>
+    </div>
+
+    <p class="form-note form-note--wide">
+      Os dados deste aplicativo ficam apenas neste navegador. Excluir uma conta
+      apaga o histórico e a paleta dela permanentemente.
+    </p>
+
+    <section class="controls" aria-label="Navegação">
+      <a href="./index.html" class="control-btn">Voltar ao Analisador</a>
+      <span id="user-count" class="controls__meta"></span>
+      <button type="button" id="logout-btn" class="control-btn danger-btn">Sair</button>
+    </section>
+
+    <section class="user-management-container">
+      <table class="analysis-history-table">
+        <caption>Contas registradas neste navegador</caption>
+        <thead>
+          <tr>
+            <th scope="col">Usuário</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Criado em</th>
+            <th scope="col">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="user-list-body"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script type="module" src="./js/profile.js"></script>
+</body>
+</html>

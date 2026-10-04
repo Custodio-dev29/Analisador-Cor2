@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — Analisador de Cores</title>
+  <meta name="description" content="Acesso ao Analisador de Cores.">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon-192x192.png" type="image/png">
+  <link rel="stylesheet" href="./styles.css">
+  <noscript>
+    <p class="noscript-warning">Este analisador precisa de JavaScript habilitado para funcionar.</p>
+  </noscript>
+</head>
+<body>
+  <main class="main-container auth-container">
+    <h1>Analisador de Cores</h1>
+
+    <p id="context-warning" class="context-warning" role="alert" hidden></p>
+
+    <form id="login-form" class="auth-form is-active" novalidate>
+      <h2>Entrar</h2>
+      <div class="form-group">
+        <label for="login-username">Usuário</label>
+        <input type="text" id="login-username" name="username" required autocomplete="username" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="form-group">
+        <label for="login-password">Senha</label>
+        <input type="password" id="login-password" name="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="control-btn auth-btn">Entrar</button>
+      <nav class="form-links" aria-label="Outras opções">
+        <a href="#register-form" id="show-register">Não tem uma conta? Cadastre-se</a>
+        <a href="#admin-form" id="show-admin">Sou o administrador</a>
+      </nav>
+    </form>
+
+    <form id="register-form" class="auth-form" novalidate>
+      <h2>Criar conta</h2>
+      <div class="form-group">
+        <label for="register-name">Nome</label>
+        <input type="text" id="register-name" name="name" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="register-username">Usuário</label>
+        <input
+          type="text"
+          id="register-username"
+          name="username"
+          required
+          minlength="3"
+          maxlength="32"
+          pattern="[a-z0-9._\-]{3,32}"
+          autocomplete="username"
+          autocapitalize="none"
+          spellcheck="false"
+          aria-describedby="register-username-hint"
+        >
+        <small id="register-username-hint" class="form-hint">3 a 32 caracteres: minúsculas, números, ponto, hífen ou sublinhado.</small>
+      </div>
+      <div class="form-group">
+        <label for="register-password">Senha</label>
+        <input
+          type="password"
+          id="register-password"
+          name="password"
+          required
+          minlength="8"
+          maxlength="200"
+          autocomplete="new-password"
+          aria-describedby="register-password-hint"
+        >
+        <small id="register-password-hint" class="form-hint">Mínimo de 8 caracteres.</small>
+      </div>
+      <p class="form-note">A primeira conta criada no navegador assume o papel de administrador.</p>
+      <button type="submit" class="control-btn auth-btn">Criar conta</button>
+      <nav class="form-links" aria-label="Outras opções">
+        <a href="#login-form" id="show-login-from-register">Já tem uma conta? Entrar</a>
+      </nav>
+    </form>
+
+    <form id="admin-form" class="auth-form" novalidate>
+      <h2>Acesso do administrador</h2>
+      <p class="form-note">
+        Esta área redefine a senha de outros usuários. Não recupera a sua senha —
+        para a sua, é outro fluxo.
+      </p>
+      <div class="form-group">
+        <label for="admin-username">Usuário administrador</label>
+        <input type="text" id="admin-username" required autocomplete="username" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="form-group">
+        <label for="admin-password">Senha</label>
+        <input type="password" id="admin-password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="control-btn auth-btn">Entrar como administrador</button>
+      <nav class="form-links" aria-label="Outras opções">
+        <a href="#login-form" id="show-login-from-admin">Voltar para o login</a>
+      </nav>
+    </form>
+
+    <form id="admin-reset-form" class="auth-form" novalidate>
+      <h2>Redefinir senha de usuário</h2>
+      <div class="form-group">
+        <label for="admin-target">Usuário</label>
+        <select id="admin-target" name="target" required></select>
+      </div>
+      <div class="form-group">
+        <label for="admin-new-password">Nova senha</label>
+        <input type="password" id="admin-new-password" required minlength="8" maxlength="200" autocomplete="new-password">
+        <small class="form-hint">Mínimo de 8 caracteres.</small>
+      </div>
+      <button type="submit" class="control-btn auth-btn">Redefinir senha</button>
+      <nav class="form-links" aria-label="Outras opções">
+        <a href="#login-form" id="show-login-from-admin-reset">Voltar para o login</a>
+      </nav>
+    </form>
+  </main>
+
+  <script type="module" src="./js/login.js"></script>
+</body>
+</html>
