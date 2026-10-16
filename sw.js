@@ -15,7 +15,7 @@
  *     respostas de erro e respostas opacas entravam no cache.
  */
 
-const VERSION = 'v8';
+const VERSION = 'v9';
 const CACHE_NAME = `analisador-cores-${VERSION}`;
 
 /** Shell do aplicativo: obrigatorio para o app funcionar offline. */
@@ -33,6 +33,7 @@ const SHELL = [
   './icons/icon-maskable-512x512.png',
   './js/app.js',
   './js/auth.js',
+  './js/camera.js',
   './js/color.js',
   './js/export.js',
   './js/guard.js',

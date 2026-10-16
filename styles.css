@@ -844,6 +844,38 @@ select:focus-visible {
   margin-top: 0.25rem;
 }
 
+/* ------------------------------ diálogo da câmera ------------------------------ */
+
+.camera-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: min(640px, calc(100vw - 2rem));
+}
+
+.camera-dialog__viewport {
+  display: flex;
+  justify-content: center;
+  background: #000;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.camera-dialog__video {
+  display: block;
+  width: 100%;
+  max-height: min(70vh, 480px);
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  background: #000;
+}
+
+.camera-dialog__capture {
+  min-width: 0;
+  margin: 0;
+}
+
 /* ------------------------------ aviso de update ------------------------------ */
 
 .update-banner {

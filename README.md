@@ -36,6 +36,11 @@ Por isso o app detecta essa situação e mostra, na tela de login, o que fazer e
 vez de falhar em silêncio. Publicar num host estático resolve: os quatro dão
 HTTPS automático.
 
+O mesmo vale para a câmera (**Tirar Foto**): `getUserMedia` só existe em contexto
+seguro. Em `http://192.168.x.x:8080` o navegador nem expõe a API; por HTTPS o
+acesso à câmera funciona normalmente. Se a API não estiver disponível, o botão
+cai para a câmera nativa do aparelho (input com `capture`).
+
 ## Funcionalidades
 
 ### Amostragem
@@ -51,6 +56,10 @@ HTTPS automático.
 - Zoom 1:1 para conferir a região selecionada pixel a pixel.
 - Leitura de orientação **EXIF** e recomposição de **JPEG progressivo**, que
   navegadores costumam exibir girados.
+- **Tirar Foto** com a câmera ao vivo (`getUserMedia`, câmera traseira quando
+  disponível). O frame é capturado em PNG sem perda e segue o mesmo caminho do
+  upload, então a cor medida não sofre recompressão. Requer contexto seguro
+  (HTTPS ou `localhost`); sem a API, cai para a câmera nativa via `capture`.
 - Navegação por teclado: setas movem o cursor, `Espaço` amostra, `+` e `-`
   ajustam o tamanho da área.
 

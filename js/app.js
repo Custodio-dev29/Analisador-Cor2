@@ -12,9 +12,10 @@
 import { createSampler } from './sampler.js';
 import { ciede2000, interpretDeltaE, formatRgb, formatLab, labToRgb } from './color.js';
 import { storage, MAX_PALETTE } from './storage.js';
-import { requireAuth, wireLogout } from './guard.js';
+import { requireAuth, wireLogout, secureContextProblem } from './guard.js';
 import { toast, reportError } from './toast.js';
 import { logger } from './logger.js';
+import { isCameraSupported, startCamera, stopCamera, captureFrame, describeCameraError } from './camera.js';
 
 /** Maior lado do canvas visivel. A mira e limitada por isso; a medicao nao. */
 const MAX_DISPLAY_DIMENSION = 1100;
@@ -32,6 +33,8 @@ function cacheElements() {
     'palette-count', 'image-meta', 'color-ruler-ref', 'ref-color-marker',
     'sel-color-marker', 'ref-ruler-label', 'sel-ruler-label',
     'ref-preview', 'sel-preview', 'value-announcer', 'admin-panel-link',
+    'camera-btn', 'camera-fallback-input', 'camera-dialog', 'camera-video',
+    'camera-status', 'camera-capture-btn', 'camera-cancel-btn',
   ];
   for (const id of ids) el[id] = $(id);
 }
@@ -51,6 +54,7 @@ const state = {
   cursor: { x: 0, y: 0 },
   hasSelection: false,
   zoomContext: 0,
+  cameraStream: null,
 };
 
 let displayCtx = null;
@@ -98,20 +102,7 @@ async function handleFileSelected(event) {
   loading.textContent = 'Carregando…';
 
   try {
-    const info = await sampler.load(file);
-    state.reference = null;
-    state.selected = null;
-    state.hasSelection = false;
-    state.cursor = { x: Math.floor(info.width / 2), y: Math.floor(info.height / 2) };
-
-    el['image-click-marker'].hidden = true;
-    el['zoom-canvas'].getContext('2d').clearRect(0, 0, el['zoom-canvas'].width, el['zoom-canvas'].height);
-
-    renderDisplay();
-    setImageStatus(true, info);
-    updateComparison();
-    updateButtons();
-
+    const info = await loadImageFile(file);
     toast.success(`Imagem carregada (${info.width}×${info.height} px).`);
   } catch (error) {
     logger.error('Falha ao carregar a imagem.', error);
@@ -120,6 +111,29 @@ async function handleFileSelected(event) {
     loading.disabled = false;
     loading.textContent = 'Carregar Imagem';
   }
+}
+
+/**
+ * Carrega um File no amostrador e reinicia a comparacao. Comum ao upload e a
+ * camera: o frame capturado chega aqui como File.
+ */
+async function loadImageFile(file) {
+  const info = await sampler.load(file);
+
+  state.reference = null;
+  state.selected = null;
+  state.hasSelection = false;
+  state.cursor = { x: Math.floor(info.width / 2), y: Math.floor(info.height / 2) };
+
+  el['image-click-marker'].hidden = true;
+  el['zoom-canvas'].getContext('2d').clearRect(0, 0, el['zoom-canvas'].width, el['zoom-canvas'].height);
+
+  renderDisplay();
+  setImageStatus(true, info);
+  updateComparison();
+  updateButtons();
+
+  return info;
 }
 
 function setImageStatus(hasImage, info = null) {
@@ -181,6 +195,73 @@ function availableDisplaySize() {
     width: Math.max(240, Math.min(MAX_DISPLAY_DIMENSION, wrapper.clientWidth - paddingX - 4)),
     height: Math.max(180, Math.min(MAX_DISPLAY_DIMENSION, window.innerHeight * 0.6)),
   };
+}
+
+/* --------------------------------- câmera --------------------------------- */
+
+/** Abre o input de fallback: no celular ele abre a câmera nativa. */
+function openCameraFallback() {
+  el['camera-fallback-input'].click();
+}
+
+async function openCamera() {
+  if (!isCameraSupported()) {
+    const problem = secureContextProblem();
+    toast.error(problem?.message
+      || 'Este navegador não expõe a câmera. Abra o app por HTTPS ou localhost.');
+    openCameraFallback();
+    return;
+  }
+
+  const dialog = el['camera-dialog'];
+  const video = el['camera-video'];
+  el['camera-status'].textContent = 'Solicitando acesso à câmera…';
+  el['camera-capture-btn'].disabled = true;
+
+  if (!dialog.open) dialog.showModal();
+
+  try {
+    state.cameraStream = await startCamera();
+    video.srcObject = state.cameraStream;
+    await video.play().catch(() => {});
+
+    el['camera-status'].textContent = 'Aponte a câmera para o objeto e toque em Capturar.';
+    el['camera-capture-btn'].disabled = false;
+  } catch (error) {
+    logger.error('Falha ao abrir a câmera.', error);
+    const message = describeCameraError(error);
+    el['camera-status'].textContent = message;
+    closeCamera();
+    toast.error(message);
+  }
+}
+
+/** Encerra a camera e fecha o dialogo. Idempotente. */
+function closeCamera() {
+  stopCamera(state.cameraStream);
+  state.cameraStream = null;
+
+  const video = el['camera-video'];
+  if (video) video.srcObject = null;
+
+  const dialog = el['camera-dialog'];
+  if (dialog?.open) dialog.close();
+}
+
+async function captureFromCamera() {
+  const button = el['camera-capture-btn'];
+  button.disabled = true;
+
+  try {
+    const file = await captureFrame(el['camera-video']);
+    closeCamera();
+    const info = await loadImageFile(file);
+    toast.success(`Foto capturada (${info.width}×${info.height} px).`);
+  } catch (error) {
+    logger.error('Falha ao capturar a foto.', error);
+    button.disabled = false;
+    toast.error(error.message || 'Não foi possível capturar a foto.');
+  }
 }
 
 /* ------------------------------ amostragem ------------------------------ */
@@ -618,6 +699,14 @@ function updateButtons() {
 function wireEvents() {
   el['upload-btn'].addEventListener('click', () => el['image-input'].click());
   el['image-input'].addEventListener('change', handleFileSelected);
+  el['camera-fallback-input'].addEventListener('change', handleFileSelected);
+
+  el['camera-btn'].addEventListener('click', openCamera);
+  el['camera-capture-btn'].addEventListener('click', captureFromCamera);
+  el['camera-cancel-btn'].addEventListener('click', closeCamera);
+  // Fecha por Esc ou por qualquer outro caminho: encerra a camera.
+  el['camera-dialog'].addEventListener('close', closeCamera);
+  window.addEventListener('pagehide', closeCamera);
 
   const canvas = el['image-canvas'];
 

@@ -6,7 +6,7 @@
   <title>Analisador de Cores</title>
   <meta name="description" content="Amostragem de cor em resolução real com comparação CIEDE2000 e histórico por usuário.">
   <meta name="color-scheme" content="light">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icons/icon-192x192.png" type="image/png">
   <link rel="stylesheet" href="./styles.css">
@@ -23,12 +23,26 @@
     </div>
   </div>
 
+  <dialog id="camera-dialog" class="app-dialog camera-dialog" aria-labelledby="camera-dialog-title">
+    <h2 id="camera-dialog-title" class="app-dialog__title">Tirar Foto</h2>
+    <p id="camera-status" class="app-dialog__body" role="status" aria-live="polite">Aponte a câmera para o objeto e toque em Capturar.</p>
+    <div class="camera-dialog__viewport">
+      <video id="camera-video" class="camera-dialog__video" playsinline autoplay muted aria-label="Pré-visualização da câmera"></video>
+    </div>
+    <div class="app-dialog__actions">
+      <button type="button" id="camera-cancel-btn" class="control-btn">Cancelar</button>
+      <button type="button" id="camera-capture-btn" class="primary-btn camera-dialog__capture">Capturar</button>
+    </div>
+  </dialog>
+
   <main class="main-container">
     <h1>Analisador de Cores</h1>
 
     <section class="controls" aria-label="Navegação principal">
       <button type="button" id="upload-btn" class="control-btn">Carregar Imagem</button>
       <input type="file" id="image-input" accept="image/*" class="visually-hidden">
+      <button type="button" id="camera-btn" class="control-btn">Tirar Foto</button>
+      <input type="file" id="camera-fallback-input" accept="image/*" capture="environment" class="visually-hidden">
       <a href="./history.html" class="control-btn">Ver Histórico</a>
       <a href="./profile.html" id="admin-panel-link" class="control-btn" hidden>Painel do Admin</a>
       <button type="button" id="logout-btn" class="control-btn danger-btn">Sair</button>
